@@ -1,0 +1,97 @@
+```{r}
+# connecting to a database that we have currently store in our folder 
+
+library(DBI)
+
+filename <- "../data/exam_database.db"
+my_connection <- dbConnect(RSQLite::SQLite(),
+                           dbname = filename)
+my_connection
+```
+```{r}
+## check what tables exist in this database 
+dbListTables(my_connection)
+
+# we have to tables that exist in iur database
+```
+```{sql connection=my_connection}
+/* sql query to view the first ten rows of the films - be sure to pass on the connection */
+  select * 
+  from films j
+  limit 10
+
+```
+```{sql connection=my_connection}
+/* sql query to view the first ten rows of the imdb_scores - be sure to pass on the connection */
+  select i.*, f.film_name, f."genre(s)"
+  from imdb_scores i
+  join films f on f.film_id=i.film_id
+  order by score desc
+  limit 15
+
+```
+```{sql connection=my_connection}
+/* sql query to view the first ten rows of the rotten_tomatoes_scores - be sure to pass on the connection */
+  select * 
+  from rotten_tomatoes_scores
+  order by audience_score desc
+  limit 15
+
+```
+```{sql connection=my_connection}
+/* sql query to view the first ten rows of the rotten_tomatoes_scores - be sure to pass on the connection */
+  select * 
+  from rotten_tomatoes_scores
+  order by critic_score desc
+  limit 50
+
+```
+
+```{sql connection=my_connection}
+/* write a sql query to count how many rows the films table contains */
+
+select count(*) as number_rows
+from films
+
+```
+```{sql connection=my_connection}
+/* write a sql query to count how many rows the imdb_scores table contains */
+
+select count(*) as number_rows
+from imdb_scores 
+
+```
+```{sql connection=my_connection}
+/* write a sql query to count how many rows the rotten_tomatoes_scores table contains */
+
+select count(*) as number_rows
+from rotten_tomatoes_scores
+
+```
+```{sql connection=my_connection}
+/* average likes of the films*/
+select avg(likes)
+from imdb_scores
+
+```
+```{sql connection=my_connection}
+/* average score of the films*/
+select avg(score)
+from imdb_scores
+
+```
+```{sql connection=my_connection}
+/* average audience_score of the films*/
+select avg(audience_score)
+from rotten_tomatoes_scores
+
+```
+```{sql connection=my_connection}
+/* average critic_score of the films*/
+select avg(critic_score)
+from rotten_tomatoes_scores
+
+
+```
+
+
