@@ -12,12 +12,12 @@ my_connection
 ## check what tables exist in this database 
 dbListTables(my_connection)
 
-# we have to tables that exist in iur database
+# we have to tables that exist in our database
 ```
 ```{sql connection=my_connection}
 /* sql query to view the first ten rows of the films - be sure to pass on the connection */
   select * 
-  from films j
+  from films
   limit 10
 
 ```
@@ -93,5 +93,239 @@ from rotten_tomatoes_scores
 
 
 ```
+```{sql connection=my_connection}
+SELECT 
+    t1.film_id AS films_column1,
+    t1.film_name AS films_column2,
+    t1.genre(s) AS films_column3,
+    t1.time_period AS films_column4,
+    t1.release_year AS films_column5,
+    t2.film_id AS imdb_scores_column1,
+    t2.scores AS imdb_scores_column2,
+    t2.likes AS imdb_scores_column3,
+    t3.film_id AS rotten_tomatoes_scores_column1,
+    t3.audience_score AS rotten_tomatoes_scores_column2,
+    t3.critic_score AS rotten_tomatoes_scores_column3
+FROM
+    films t1
+    JOIN imdb_scores t2 ON t1.common_column = t2.common_column
+    JOIN table3 t3 ON t1.common_column = t3.common_column
+
+```
+
+```{sql connection=my_connection}
+SELECT
+    films.film_id,
+    films.film_name,
+    films.genre(s),
+    films.time_period,
+    films.release_year,
+    rotten_tomatoes_scores.audience_score,
+    rotten_tomatoes_scores.critic_score,
+    imdb_scores.score,
+    imdb_scores.likes
+FROM
+    films 
+    JOIN rotten_tomatoes_scores  ON films.film_id = rotten_tomatoes_scores.film_id
+    JOIN imdb_scores  ON films.film_id = imdb_scores.film_id;
+
+```
+```{sql connection=my_connection}
+SELECT 
+    t1.film_id,  
+    t1.film_name, 
+    "genre(s)",
+    t1.time_period,
+    t1.release_year ,
+    t2.score AS imdb_scores,
+    t2.likes AS imdb_likes,
+    t3.audience_score AS rotten_tomatoes_audience_scores,
+    t3.critic_score AS rotten_tomatoes_critic_score
+FROM
+    films t1
+    JOIN imdb_scores t2 ON t1.film_id = t2.film_id
+    JOIN rotten_tomatoes_scores t3 ON t1.film_id = t3.film_id
+
+```
+```{sql connection= my_connection} 
+SELECT f."genre(s)", SUM(i.likes) AS total_likes
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+GROUP BY f."genre(s)"
+ORDER BY total_likes DESC
+LIMIT 5;
+
+```
+
+```{r}
+# import the library
+library(tidyverse)
+
+# write the SQL query in the paste function and store as a variable called query
+query <- paste("
+SELECT f.'genre(s)' as genres, 
+      SUM(i.score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+GROUP BY f.'genre(s)'
+ORDER BY total_score DESC
+LIMIT 5",
+sep = "" )
+
+# pass your connection and the query to the tbl function and store as a variable
+top_genres_by_score <- tbl(my_connection, sql(query))
+top_genres_by_score
+```
+
+```{r}
+top_genres_by_score %>%
+  ggplot(aes(x=reorder(genres, -total_likes), y = total_likes)) +
+    geom_bar(stat = 'identity', color="black", fill="blue") +
+      xlab('Genres') +
+        ylab('Number of movies') +
+          ggtitle("Distribution of genres by likes") +
+             theme(axis.text.x = element_text(size = 8))
+```
+```{sql connection=my_connection}
+SELECT film_name,
+      SUM(score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+where "genre(s)" like '%Comedy%'
+GROUP BY film_name
+ORDER BY 2 DESC
+LIMIT 10
+```
+
+```{r}
+# import the library
+library(tidyverse)
+
+# write the SQL query in the paste function and store as a variable called query
+query <- paste("
+SELECT f.'genre(s)' as genres, 
+      SUM(i.score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+GROUP BY f.'genre(s)'
+ORDER BY total_score",
+sep = "" )
+
+# pass your connection and the query to the tbl function and store as a variable
+worst_genres_by_score <- tbl(my_connection, sql(query))
+worst_genres_by_score
+```
+```{sql connection=my_connection}
+SELECT film_name,
+      SUM(score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+where "genre(s)" like '%Action,Adventure,Sci-Fi%'
+GROUP BY film_name
+ORDER BY 2 DESC
+LIMIT 10
+
+```
+```{sql connection=my_connection}
+SELECT film_name,
+      SUM(score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+where "genre(s)" like '%Drama%'
+GROUP BY film_name
+ORDER BY 2 DESC
+LIMIT 10
+
+```
+```{r}
+# import the library
+library(tidyverse)
+
+# write the SQL query in the paste function and store as a variable called query
+query <- paste("
+SELECT f.'genre(s)' as genres, 
+      SUM(i.score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+GROUP BY f.'genre(s)'
+ORDER BY total_score 
+LIMIT 5",
+sep = "" )
+
+# pass your connection and the query to the tbl function and store as a variable
+top_genres_by_score <- tbl(my_connection, sql(query))
+top_genres_by_score
+```
+```{sql connection=my_connection}
+SELECT film_name,
+      SUM(score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+where "genre(s)" like '%Action,Comedy,Music%'
+GROUP BY film_name
+ORDER BY 2 DESC
+LIMIT 10
+
+```
+```{sql connection=my_connection}
+SELECT film_name,
+      SUM(score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+where "genre(s)" like '%Sci-Fi,Action%'
+GROUP BY film_name
+ORDER BY 2 DESC
+LIMIT 10
+
+```
+```{sql connection=my_connection}
+
+SELECT film_name,
+      SUM(score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+where "genre(s)" like '%Animation,Comedy,Horror%'
+GROUP BY film_name
+ORDER BY 2 DESC
+LIMIT 10
+
+```
+```{sql connection=my_connection}
+
+SELECT film_name,
+      SUM(score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+where "genre(s)" like '%Comedy,Drama,Romance%'
+GROUP BY film_name
+ORDER BY 2 DESC
+LIMIT 10
+
+```
+```{sql connection=my_connection}
+
+SELECT film_name,
+      SUM(score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+where "genre(s)" like '%Drama%'
+GROUP BY film_name
+ORDER BY 2 DESC
+LIMIT 10
+
+```
+```{sql connection=my_connection}
+
+SELECT film_name,
+      SUM(score) AS total_score
+FROM films f
+JOIN imdb_scores i ON f.film_id = i.film_id
+where "genre(s)" = 'Comedy,Drama'
+GROUP BY film_name
+ORDER BY 2 DESC
+LIMIT 10
+
+```
+
 
 
